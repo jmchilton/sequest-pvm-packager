@@ -29,4 +29,4 @@ chmod a+rx $CONTENTS_DIR/usr/bin/*
 
 # -a all
 echo "Packaging sequest"
-fpm -s dir -t $SEQUEST_PACKAGE_TYPE -n "${SEQUEST_PACKAGE_NAME}" -v $SEQUEST_VERSION -C $CONTENTS_DIR --depends pvm 
+fpm -s dir -t $SEQUEST_PACKAGE_TYPE -n "${SEQUEST_PACKAGE_NAME}" -v $SEQUEST_VERSION -C $CONTENTS_DIR --depends pvm .
