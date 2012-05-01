@@ -1,0 +1,50 @@
+#!/usr/bin/python
+import os
+import re
+import subprocess
+import sys
+
+sequest_program = "/usr/share/sequest/sequest27_master.i86"
+
+def main():
+    # First arg should by -P/path/to/sequest.params
+    params = sys.argv[1]
+
+    # Second arg should be -R/path/to/dta_list_file 
+    dtaListPath = sys.argv[2][2:] # Grab second argument and strip off the -R
+    dtaListFile = open(dtaListPath, 'r')
+
+    # Build list of all dtaFiles from the specified file
+    dtaFiles = dtaListFile.read().splitlines()
+
+    for file in dtaFiles:
+        print file
+
+    # Tell xargs to run sequest with each of these files
+    call_sequest(params, dtaFiles)
+
+    # Build list of dta files without matching out file
+    notCompleteFiles = [f for f in dtaFiles if not os.path.exists(re.sub("dta$", "out", f)) ]
+
+    # If there are dta files without matching out files, try rerunning sequest with
+    # these files
+    if len(notCompleteFiles) > 0:
+        call_sequest(params, notCompleteFiles)
+            
+def call_sequest(params, files) :
+    # Launch xargs and open a pipe to spit dta files into
+    p = subprocess.Popen(["/usr/bin/xargs", "--verbose", sequest_program, params], stdin=subprocess.PIPE, stderr=open('/dev/null', 'w'))
+
+    # Iterate through the dta files and print them to the pipe into xargs stdin
+    for f in files:
+        print >>p.stdin, f,
+
+    # Close xargs pipe to tell it we are done
+    p.stdin.close()
+
+    # Wait for xargs to finish processing
+    sts = os.waitpid(p.pid, 0)
+
+# Specify entry point
+if __name__ == "__main__":
+    main()
